@@ -10,19 +10,11 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Model
-    ( module Model
-    ) where
+module Model.Core where
 
 import ClassyPrelude.Yesod
 import Database.Persist.Quasi
 
-import Model.Core as Model
-import Model.CoreData as Model
-import Model.Project as Model
+import Model.CoreData
 
-share [mkMigrate "migrateAll"]
-    $(persistManyFileWith lowerCaseSettings
-        [ "config/models/core.persistentmodels"
-        , "config/models/project.persistentmodels"
-        ])
+share [mkPersist sqlSettings] $(persistFileWith lowerCaseSettings "config/models/core.persistentmodels")

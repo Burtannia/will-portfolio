@@ -1,23 +1,24 @@
-<!-- Static navbar -->
-<nav .navbar.navbar-default.navbar-static-top>
+<!-- Navbar -->
+<nav .navbar .fixed-top .navbar-expand-lg .navbar-light>
     <div .container>
-        <div .navbar-header>
-            <button type="button" .navbar-toggle.collapsed data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation
-                <span class="icon-bar">
-                <span class="icon-bar">
-                <span class="icon-bar">
+        <a .navbar-brand href="/">Will's Portfolio
+        <button .navbar-toggler type="button" data-toggle="collapse" data-target="#navbarContent"
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span .navbar-toggler-icon>
 
-        <div #navbar .collapse.navbar-collapse>
-            <ul .nav.navbar-nav>
-                $forall MenuItem label route _ <- navbarLeftFilteredMenuItems
-                    <li :Just route == mcurrentRoute:.active>
-                        <a href="@{route}">#{label}
+        <div .collapse .navbar-collapse #navbarContent>
+            <ul .navbar-nav .ml-auto>
 
-            <ul .nav.navbar-nav.navbar-right>
-                $forall MenuItem label route _ <- navbarRightFilteredMenuItems
-                    <li :Just route == mcurrentRoute:.active>
-                        <a href="@{route}">#{label}
+                $forall MenuItem label route _ <- navbarLeftFilteredMenuItems       
+                    <li .nav-item :Just route == mcurrentRoute:.active>
+                        <a .nav-link href=@{route}>#{label}
+
+                <li .nav-item>
+                    <a .nav-link href="#">Contact
+
+                $forall MenuItem label route _ <- navbarRightFilteredMenuItems       
+                    <li .nav-item :Just route == mcurrentRoute:.active>
+                        <a .nav-link href=@{route}>#{label}
 
 <!-- Page Contents -->
 
@@ -36,16 +37,12 @@
                 <span aria-hidden="true">&times
 
 
-$if (Just HomeR == mcurrentRoute)
-    ^{widget}
-$else
-    <div .container>
-        <div .row>
-            <div .col-md-12>
-                ^{widget}
+<div .container #main-content>
+    <div .row>
+        <div .col-md-12>
+            ^{widget}
 
 <!-- Footer -->
 <footer .footer>
-    <div .container>
-        <p .text-muted>
-            #{appCopyright $ appSettings master}
+    <p .text-muted>
+        #{appCopyright $ appSettings master}

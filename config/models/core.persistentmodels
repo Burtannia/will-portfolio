@@ -6,3 +6,10 @@ User
     isAdmin Bool
     UniqueIdent ident
     deriving Show
+Image
+    uuid Text
+    ext ImageExt
+    UniqueImageId uuid
+    Primary uuid
+MarkupBlock
+    content Html

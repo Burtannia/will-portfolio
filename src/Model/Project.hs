@@ -10,19 +10,20 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Model
-    ( module Model
-    ) where
+
+module Model.Project where
 
 import ClassyPrelude.Yesod
 import Database.Persist.Quasi
 
-import Model.Core as Model
-import Model.CoreData as Model
-import Model.Project as Model
+import Model.Core
 
-share [mkMigrate "migrateAll"]
-    $(persistManyFileWith lowerCaseSettings
-        [ "config/models/core.persistentmodels"
-        , "config/models/project.persistentmodels"
-        ])
+data Component
+    = C_ImageGroup [ImageId]
+    | C_VideoEmbed Text
+    | C_Text MarkupBlockId
+    deriving (Show, Read)
+
+derivePersistField "Component"
+
+share [mkPersist sqlSettings] $(persistFileWith lowerCaseSettings "config/models/project.persistentmodels")

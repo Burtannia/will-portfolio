@@ -1,0 +1,7 @@
+Project
+    title Text
+    url Text
+    published Bool
+    content [Component]
+    UniqueProjectUrl url
+    Primary url

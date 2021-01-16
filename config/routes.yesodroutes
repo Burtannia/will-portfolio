@@ -8,3 +8,9 @@
 /robots.txt RobotsR GET
 
 / HomeR GET POST
+
+/images ImagesR Static appImages
+
+/projects/#ProjectId ProjectR GET POST
+
+/privacy PrivacyR GET

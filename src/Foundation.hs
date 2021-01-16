@@ -141,9 +141,6 @@ instance Yesod App where
 
         let isAdmin = maybe False (userIsAdmin . snd) muser
 
-        -- Get the breadcrumbs, as defined in the YesodBreadcrumbs instance.
-        (title, parents) <- breadcrumbs
-
         -- Define the menu items of the header.
         let menuItems =
                 [ NavbarLeft $ MenuItem

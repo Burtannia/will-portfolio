@@ -3,20 +3,20 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
-module Handler.Home where
+module Handler.Project where
 
 import Import
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4, bfs)
 import Text.Julius (RawJS (..))
 
-getHomeR :: Handler Html
-getHomeR = do
+getProjectR :: ProjectId -> Handler Html
+getProjectR projectId = do
     defaultLayout $ do
         setTitle "Welcome To Yesod!"
-        $(widgetFile "homepage")
+        $(widgetFile "project")
 
-postHomeR :: Handler Html
-postHomeR = do
+postProjectR :: ProjectId -> Handler Html
+postProjectR projectId = do
     defaultLayout $ do
         setTitle "Welcome To Yesod!"
-        $(widgetFile "homepage")
+        $(widgetFile "project")
