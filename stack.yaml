@@ -40,7 +40,9 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+- yesod-auth-oauth2-0.6.1.7@sha256:85eadc5932c150ba8dc7e2cad1b6ea951d9e1b8bb0bf77d2b252d2763f167b76,2950
+- yesod-form-multi-1.7.0.1@sha256:058ec201f32a506862a2481a55d22e400a3230acd8dd2c028ae33e6c817c4a90,1352
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

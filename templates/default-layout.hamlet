@@ -1,4 +1,3 @@
-
 <!-- Static navbar -->
 <nav .navbar.navbar-default.navbar-static-top>
     <div .container>
@@ -23,16 +22,18 @@
 <!-- Page Contents -->
 
 <div .container>
-    $if not $ Just HomeR == mcurrentRoute
-        <ul .breadcrumb>
-            $forall bc <- parents
-                <li>
-                    <a href="@{fst bc}">#{snd bc}
+    $# $if not $ Just HomeR == mcurrentRoute
+    $#     <ul .breadcrumb>
+    $#         $forall bc <- parents
+    $#             <li>
+    $#                 <a href="@{fst bc}">#{snd bc}
 
-            <li .active>#{title}
+    $#         <li .active>#{title}
 
     $maybe msg <- mmsg
-      <div .alert.alert-info #message>#{msg}
+        <div .alert.alert-info.alert-dismissable.fade.show #message role="alert">#{msg}
+            <button type="button" .close #msg-close data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times
 
 
 $if (Just HomeR == mcurrentRoute)

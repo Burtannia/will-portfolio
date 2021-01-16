@@ -19,12 +19,16 @@ import Control.Monad.Logger (LogSource)
 -- Used only when in "auth-dummy-login" setting is enabled.
 import Yesod.Auth.Dummy
 
+import Yesod.Auth.OAuth2 (oauth2Url)
+import Yesod.Auth.OAuth2.Google (oauth2GoogleScoped)
+
 import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
+import qualified Network.Wai as Wai (requestHeaders)
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -33,9 +37,12 @@ import qualified Data.Text.Encoding as TE
 data App = App
     { appSettings    :: AppSettings
     , appStatic      :: Static -- ^ Settings for static file serving.
+    , appImages      :: Static
     , appConnPool    :: ConnectionPool -- ^ Database connection pool.
     , appHttpManager :: Manager
     , appLogger      :: Logger
+    , appGoogleAuthId :: Text
+    , appGoogleAuthKey :: Text
     }
 
 data MenuItem = MenuItem
@@ -47,6 +54,10 @@ data MenuItem = MenuItem
 data MenuTypes
     = NavbarLeft MenuItem
     | NavbarRight MenuItem
+
+twitterLink, youtubeLink :: Text
+twitterLink = ""
+youtubeLink = ""
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -80,10 +91,33 @@ instance Yesod App where
             Nothing -> getApprootText guessApproot app req
             Just root -> root
 
+    errorHandler :: ErrorResponse -> Handler TypedContent
+    errorHandler errorResponse = do
+        $(logWarn) ("Error Response: " <> pack (show errorResponse))
+        req <- waiRequest
+        let reqwith = lookup "X-Requested-With" $ Wai.requestHeaders req
+            errorText NotFound = (404, "Not Found", "Sorry, not found")
+            errorText (InternalError msg) = (400, "Bad Request", msg)
+            errorText (InvalidArgs m) = (400, "Bad Request", unwords m)
+            errorText (PermissionDenied msg) = (403, "Forbidden", msg)
+            errorText (BadMethod _) = (405, "Method Not Allowed",
+                                            "Method not supported")
+            errorText NotAuthenticated = (401, "Unauthorized", "Unauthorized")
+        when (maybe False (== "XMLHttpRequest") reqwith) $ do
+            let (code, brief, full) = errorText errorResponse
+            sendResponseStatus
+                (mkStatus code brief)
+                $ RepPlain $ toContent $ "Error: " <> full
+        defaultErrorHandler errorResponse
+
+    maximumContentLength :: App -> Maybe (Route App) -> Maybe Word64
+    maximumContentLength _ _ = Just $ 5 * 1024 * 1024 -- 5 megabytes
+
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
     makeSessionBackend :: App -> IO (Maybe SessionBackend)
-    makeSessionBackend _ = Just <$> defaultClientSessionBackend
+    makeSessionBackend _ = --sslOnlySessions $
+        Just <$> defaultClientSessionBackend
         120    -- timeout in minutes
         "config/client_session_key.aes"
 
@@ -95,7 +129,7 @@ instance Yesod App where
     -- To add it, chain it together with the defaultMiddleware: yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
     yesodMiddleware :: ToTypedContent res => Handler res -> Handler res
-    yesodMiddleware = defaultYesodMiddleware
+    yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware . (sslOnlyMiddleware 120)
 
     defaultLayout :: Widget -> Handler Html
     defaultLayout widget = do
@@ -104,6 +138,8 @@ instance Yesod App where
 
         muser <- maybeAuthPair
         mcurrentRoute <- getCurrentRoute
+
+        let isAdmin = maybe False (userIsAdmin . snd) muser
 
         -- Get the breadcrumbs, as defined in the YesodBreadcrumbs instance.
         (title, parents) <- breadcrumbs
@@ -114,11 +150,6 @@ instance Yesod App where
                     { menuItemLabel = "Home"
                     , menuItemRoute = HomeR
                     , menuItemAccessCallback = True
-                    }
-                , NavbarLeft $ MenuItem
-                    { menuItemLabel = "Profile"
-                    , menuItemRoute = ProfileR
-                    , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
                     { menuItemLabel = "Login"
@@ -153,7 +184,7 @@ instance Yesod App where
     authRoute
         :: App
         -> Maybe (Route App)
-    authRoute _ = Just $ AuthR LoginR
+    authRoute _ = Just $ AuthR $ oauth2Url "google"
 
     isAuthorized
         :: Route App  -- ^ The route the user is visiting.
@@ -161,15 +192,10 @@ instance Yesod App where
         -> Handler AuthResult
     -- Routes not requiring authentication.
     isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized CommentR _ = return Authorized
     isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
-
-    -- the profile route requires that the user is authenticated, so we
-    -- delegate to that function
-    isAuthorized ProfileR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -215,10 +241,7 @@ instance YesodBreadcrumbs App where
     breadcrumb
         :: Route App  -- ^ The route the user is visiting currently.
         -> Handler (Text, Maybe (Route App))
-    breadcrumb HomeR = return ("Home", Nothing)
-    breadcrumb (AuthR _) = return ("Login", Just HomeR)
-    breadcrumb ProfileR = return ("Profile", Just HomeR)
-    breadcrumb  _ = return ("home", Nothing)
+    breadcrumb  _ = return ("Home", Nothing)
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -245,30 +268,41 @@ instance YesodAuth App where
     redirectToReferer :: App -> Bool
     redirectToReferer _ = True
 
+    loginHandler = do
+        ma <- maybeAuthId
+        when (isJust ma) $ do
+            setMessage "You are already logged in"
+            redirect HomeR
+        redirect $ AuthR $ oauth2Url "google"
+
     authenticate :: (MonadHandler m, HandlerSite m ~ App)
                  => Creds App -> m (AuthenticationResult App)
     authenticate creds = liftHandler $ runDB $ do
-        x <- getBy $ UniqueUser $ credsIdent creds
+        x <- getBy $ UniqueIdent $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Authenticated uid
             Nothing -> Authenticated <$> insert User
                 { userIdent = credsIdent creds
-                , userPassword = Nothing
+                , userIsAdmin = False
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
     authPlugins :: App -> [AuthPlugin App]
-    authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins
+    authPlugins app = [ oauth2GoogleScoped ["email", "profile"]
+        (appGoogleAuthId app) (appGoogleAuthKey app) ]
+        ++ extraAuthPlugins
         -- Enable authDummy login if enabled.
         where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
 isAuthenticated = do
-    muid <- maybeAuthId
-    return $ case muid of
-        Nothing -> Unauthorized "You must login to access this page"
-        Just _ -> Authorized
+    muser <- maybeAuth
+    return $ case muser of
+        Nothing -> Unauthorized "You must be logged in to access this page"
+        Just (Entity _ user)
+            | userIsAdmin user -> Authorized
+            | otherwise -> Unauthorized "You are not authorized to access this page"
 
 instance YesodAuthPersist App
 
