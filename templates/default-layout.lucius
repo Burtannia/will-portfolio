@@ -25,3 +25,11 @@ footer p {
     font-size: 0.8rem;
     margin: 0;
 }
+
+/* General */
+
+.lg-checkbox {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+}

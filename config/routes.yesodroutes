@@ -11,6 +11,6 @@
 
 /images ImagesR Static appImages
 
-/projects/#ProjectId ProjectR GET POST
+/projects/#ProjectId ProjectR GET POST DELETE
 
 /privacy PrivacyR GET

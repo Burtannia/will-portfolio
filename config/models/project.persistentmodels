@@ -2,6 +2,7 @@ Project
     title Text
     url Text
     published Bool
+    icon ImageId
     content [Component]
     UniqueProjectUrl url
     Primary url
