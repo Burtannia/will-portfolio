@@ -1,3 +1,2 @@
 <h2>Hello World
-<form method=post enctype=#{pEnctype}>
-    ^{pWidget}
+^{pWidget}

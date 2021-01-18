@@ -59,9 +59,9 @@ pFormIdent = "project-form"
 
 projectForm :: Maybe Project -> Form Project
 projectForm mp extra = do
-    (titleRes, titleView) <- mreq textField (fs "" Nothing) (projectTitle <$> mp)
-    (urlRes, urlView) <- mreq pUrlField (fs "" urlTip) (projectUrl <$> mp)
-    (pubRes, pubView) <- mreq boolField pubSettings (projectPublished <$> mp)
+    (titleRes, titleView) <- mreq textField defs (projectTitle <$> mp)
+    (urlRes, urlView) <- mreq pUrlField defs (projectUrl <$> mp)
+    (pubRes, pubView) <- mreq checkBoxField (withClass "lg-checkbox" "") (projectPublished <$> mp)
     (mFileRes, iconView) <- case mp of
         Nothing -> fmap (first (fmap Just)) $ mreq fileField uploadSettings Nothing
         Just p -> mopt fileField uploadSettings Nothing
@@ -75,41 +75,38 @@ projectForm mp extra = do
         projectWidget =
             [whamlet|
                 #{extra}
-                ^{fvInput titleView}
-                ^{fvInput urlView}
-                ^{fvInput pubView}
-                ^{fvInput iconView}
+                <div .form-group>
+                    <label for=#{fvId titleView}>Title
+                    ^{fvInput titleView}
+                <div .form-group>
+                    <label for=#{fvId urlView}>Url
+                    ^{fvInput urlView}
+                    <small #urlHelp .form-text .text-muted>#{urlTip}
+                <div .form-group>
+                    <label for=#{fvId pubView}>Published
+                    ^{fvInput pubView}
+                    <small #pubHelp .form-text .text-muted>#{pubTip}
+                <div .form-group>
+                    <label for=#{fvId iconView}>Icon
+                    ^{fvInput iconView}
+                    <small #iconHelp .form-text .text-muted>#{uploadTip}
             |]
 
     return (projectRes, projectWidget)
     where
-        urlTip = Just "The project will appear at <your domain>/projects/<url>. Only letters, numbers, hyphens and underscores are permitted."
+        defs = withClass "form-control" ""
+        urlTip = "The project will appear at <your domain>/projects/<url>. Only letters, numbers, hyphens and underscores are permitted." :: Text
         pUrlField = check validateUrl textField
-        pubTip = Just "Projects that are not published will only be viewable by admins."
+        pubTip = "Projects that are not published will only be viewable by admins." :: Text
+        uploadTip = "This image will be shown as the thumbnail for the project on the homepage." :: Text
         uploadSettings = FieldSettings
-            { fsLabel = "Icon"
-            , fsTooltip = Just "This image will be used as a thumbnail if the guide is displayed on the homepage."
+            { fsLabel = ""
+            , fsTooltip = Nothing
             , fsId = Nothing
             , fsName = Nothing
             , fsAttrs =
                 [ ("accept", ".jpg, .png, .gif")
                 , ("class", "form-control-file") ]
-            }
-        pubSettings = FieldSettings
-            { fsLabel = ""
-            , fsTooltip = pubTip
-            , fsId = Nothing
-            , fsName = Nothing
-            , fsAttrs =
-                [ ("class", "lg-checkbox") ]
-            }
-        fs label mtt = FieldSettings
-            { fsLabel = label
-            , fsTooltip = mtt
-            , fsId = Nothing
-            , fsName = Nothing
-            , fsAttrs =
-                [ ("class", "form-control") ]
             }
         validateUrl t =
             if isValid

@@ -6,20 +6,28 @@
 module Handler.Home where
 
 import Import
+import Handler.Modal
 import Handler.Project
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4, bfs)
 import Text.Julius (RawJS (..))
 
+theTitle :: Html
+theTitle = toHtml
+    ("Will Burton - Gamer & Hobbyist Map Designer" :: Text)
+
 getHomeR :: Handler Html
 getHomeR = do
-    (pWidget, pEnctype) <- genFormIdentify pFormIdent $ projectForm Nothing
+    pForm <- genFormIdentify pFormIdent $ projectForm Nothing
+    let pWidget = mkModal "New Project" pForm
     defaultLayout $ do
-        setTitle "Welcome To Yesod!"
+        setTitle theTitle
         $(widgetFile "homepage")
 
 postHomeR :: Handler Html
 postHomeR = do
-    ((pResult, pWidget), pEnctype) <- runFormIdentify pFormIdent $ projectForm Nothing
+    ((pResult, pWidget'), pEnctype) <- runFormIdentify pFormIdent $ projectForm Nothing
+    let pForm = (pWidget', pEnctype)
+        pWidget = mkModal "New Project" pForm
     defaultLayout $ do
-        setTitle "Welcome To Yesod!"
+        setTitle theTitle
         $(widgetFile "homepage")
