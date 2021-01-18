@@ -27,6 +27,19 @@ uploadImage file = do
             imgId <- liftHandler $ runDB $ insert newImg
             return imgId
 
+deleteImage :: ImageId -> Handler ()
+deleteImage imgId = do
+    mImg <- runDB $ get imgId
+
+    for_ mImg $ \img -> do
+        app <- getYesod
+        let imgPath = mkImagePath (appImageDir $ appSettings app) img
+        liftIO $ removeFile imgPath
+        stillExists <- liftIO $ doesFileExist imgPath
+        unless stillExists $ runDB $ delete imgId
+    
+    return ()
+
 parseExt :: Text -> Maybe ImageExt
 parseExt "image/jpeg" = Just JPG
 parseExt "image/png" = Just PNG

@@ -1,0 +1,13 @@
+$('#deleteProject').click(function() {
+    if(confirm("Are you sure you want to delete this project?"))
+        $.ajax({
+            type: "DELETE",
+            contentType: "application/json",
+            url: "@{ProjectR projectId}"
+        })
+        .done(() => window.location.replace("@{HomeR}"))
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log(errorThrown + ": " + jqXHR.responseText);
+            makeAlertDanger("Something went wrong");
+        });
+});

@@ -7,9 +7,12 @@
 module Handler.Project where
 
 import Import
+
+import Handler.Image
+import Handler.Modal
+
 import Text.Julius (RawJS (..))
 import qualified Data.Text as T (foldr)
-import Handler.Image
 import Data.Maybe (fromJust)
 
 getProjectR :: ProjectId -> Handler Html
@@ -21,7 +24,9 @@ getProjectR projectId = do
 
     when (not isAdmin && not published) notFound
 
-    (pWidget, pEnctype) <- genFormIdentify pFormIdent $ projectForm $ Just project
+    pForm <- genFormIdentify pFormIdent $ projectForm $ Just project
+
+    let pWidget = mkModal "Edit Project" pForm
 
     defaultLayout $ do
         setTitle $ toHtml $ projectTitle project
@@ -36,10 +41,21 @@ postProjectR projectId = do
 
     when (not isAdmin && not published) notFound
 
-    ((pResult, pWidget), pEnctype) <- runFormIdentify pFormIdent $ projectForm $ Just project
+    ((pResult, pWidget'), pEnctype) <- runFormIdentify pFormIdent $ projectForm $ Just project
+
+    let pForm = (pWidget', pEnctype)
+        pWidget = mkModal "Edit Project" pForm
 
     case pResult of
-        FormSuccess _ -> return ()
+        FormSuccess newProject -> do
+            let oldIcon = projectIcon project
+                newIcon = projectIcon newProject
+
+            runDB $ replace projectId newProject
+
+            when (oldIcon /= newIcon) $ deleteImage oldIcon
+
+            redirect $ ProjectR projectId
 
         FormMissing -> return ()
 
@@ -52,10 +68,43 @@ postProjectR projectId = do
         $(widgetFile "project")
 
 deleteProjectR :: ProjectId -> Handler ()
-deleteProjectR projectId = return ()
+deleteProjectR projectId = do
+    mp <- runDB $ get projectId
+    for_ mp $ \p -> do
+        runDB $ delete projectId
+        deleteImage $ projectIcon p
+        setMessage "Project deleted successfully"
+        sendResponse ("Project deleted successfully" :: Text)
+    sendResponseStatus status404 ("Project does not exist" :: Text)
 
 pFormIdent :: Text
 pFormIdent = "project-form"
+
+getNewProject :: Widget
+getNewProject = do
+    pForm <- liftHandler $
+        genFormIdentify pFormIdent $ projectForm Nothing
+    mkModal "New Project" pForm
+
+postNewProject :: Widget
+postNewProject = do
+    ((pResult, pWidget'), pEnctype) <- liftHandler $
+        runFormIdentify pFormIdent $ projectForm Nothing
+
+    case pResult of
+        FormSuccess project -> do
+            pId <- liftHandler $ runDB $ insert project
+            redirect $ ProjectR pId
+
+        FormMissing -> return ()
+
+        FormFailure errs -> do
+            liftHandler $ liftIO $ putStrLn "postNewProject"
+            liftHandler $ print errs
+
+    let pForm = (pWidget', pEnctype)
+    
+    mkModal "New Project" pForm
 
 projectForm :: Maybe Project -> Form Project
 projectForm mp extra = do
@@ -68,7 +117,6 @@ projectForm mp extra = do
 
     mIconRes <- lift $ traverse (traverse uploadImage) mFileRes
 
-    -- TODO: rewrite without fromJust?
     let iconRes = fmap (fromMaybe (projectIcon $ fromJust mp)) mIconRes
         contentRes = pure $ maybe [] projectContent mp
         projectRes = Project <$> titleRes <*> urlRes <*> pubRes <*> iconRes <*> contentRes
@@ -92,7 +140,19 @@ projectForm mp extra = do
                     <small #iconHelp .form-text .text-muted>#{uploadTip}
             |]
 
+    -- if form failed but we uploaded an image, delete it
+    case projectRes of
+        FormFailure _ ->
+            case iconRes of
+                FormSuccess imgId -> do
+                    _ <- lift $ deleteImage imgId
+                    return ()
+                _ -> return ()
+
+        _ -> return ()
+
     return (projectRes, projectWidget)
+
     where
         defs = withClass "form-control" ""
         urlTip = "The project will appear at <your domain>/projects/<url>. Only letters, numbers, hyphens and underscores are permitted." :: Text

@@ -1,0 +1,6 @@
+<div .row>
+    ^{pWidget}
+    <button type="button" #deleteProject .btn .btn-danger>Delete Project
+    
+<h3>#{projectTitle project}
+<img src=@{ImagesR $ mkImageUrl $ projectIcon project}>

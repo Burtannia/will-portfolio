@@ -17,17 +17,14 @@ theTitle = toHtml
 
 getHomeR :: Handler Html
 getHomeR = do
-    pForm <- genFormIdentify pFormIdent $ projectForm Nothing
-    let pWidget = mkModal "New Project" pForm
+    let npWidget = getNewProject
     defaultLayout $ do
         setTitle theTitle
         $(widgetFile "homepage")
 
 postHomeR :: Handler Html
 postHomeR = do
-    ((pResult, pWidget'), pEnctype) <- runFormIdentify pFormIdent $ projectForm Nothing
-    let pForm = (pWidget', pEnctype)
-        pWidget = mkModal "New Project" pForm
+    let npWidget = postNewProject
     defaultLayout $ do
         setTitle theTitle
         $(widgetFile "homepage")
