@@ -4,16 +4,20 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Handler.Project where
 
 import Import
 
 import Handler.Image
 import Handler.Modal
+import Handler.Component
 
+import Data.Aeson.Types
 import Text.Julius (RawJS (..))
 import qualified Data.Text as T (foldr)
 import Data.Maybe (fromJust)
+import qualified Data.List as L ((!!))
 
 getProjectR :: ProjectId -> Handler Html
 getProjectR projectId = do
@@ -50,7 +54,7 @@ postProjectR projectId = do
         FormSuccess newProject -> do
             let oldIcon = projectIcon project
                 newIcon = projectIcon newProject
-
+            liftIO $ print $ oldIcon == newIcon
             runDB $ replace projectId newProject
 
             when (oldIcon /= newIcon) $ deleteImage oldIcon
@@ -66,6 +70,52 @@ postProjectR projectId = do
     defaultLayout $ do
         setTitle $ toHtml $ projectTitle project
         $(widgetFile "project")
+
+data ProjectUpdate
+    = DeleteComp Int
+    | CompUp Int
+    | CompDown Int
+    deriving (Show, Read, Generic)
+
+instance ToJSON ProjectUpdate where
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON ProjectUpdate where
+    parseJSON = genericParseJSON defaultOptions
+
+patchProjectR :: ProjectId -> Handler ()
+patchProjectR projectId = do
+    mp <- runDB $ get projectId
+    pUpdate <- requireCheckJsonBody :: Handler ProjectUpdate
+
+    for_ mp $ \p -> do
+        let cs = projectContent p
+
+        case pUpdate of
+            DeleteComp ix
+                | ix >= 0 && ix < length cs -> do
+                    runDB $ update projectId $
+                        [ ProjectContent =. cs -! ix ]
+                    deleteComponent $ cs L.!! ix
+                    sendResponse ("Project updated" :: Text)
+                | otherwise -> sendResponseStatus status500
+                    ("Index out of bounds " <> tshow ix)
+
+            CompUp ix
+                | ix >= 0 && ix < length cs -> do
+                    runDB $ update projectId $
+                        [ ProjectContent =. moveIxUp ix cs ]
+                    sendResponse ("Project updated" :: Text)
+                | otherwise -> sendResponseStatus status500
+                    ("Index out of bounds " <> tshow ix)
+
+            CompDown ix
+                | ix >= 0 && ix < length cs -> do
+                    runDB $ update projectId $
+                        [ ProjectContent =. moveIxDown ix cs ]
+                    sendResponse ("Project updated" :: Text)
+                | otherwise -> sendResponseStatus status500
+                    ("Index out of bounds " <> tshow ix)
 
 deleteProjectR :: ProjectId -> Handler ()
 deleteProjectR projectId = do
@@ -111,36 +161,40 @@ projectForm mp extra = do
     (titleRes, titleView) <- mreq textField defs (projectTitle <$> mp)
     (urlRes, urlView) <- mreq pUrlField defs (projectUrl <$> mp)
     (pubRes, pubView) <- mreq checkBoxField (withClass "lg-checkbox" "") (projectPublished <$> mp)
-    (mFileRes, iconView) <- case mp of
-        Nothing -> fmap (first (fmap Just)) $ mreq fileField uploadSettings Nothing
-        Just p -> mopt fileField uploadSettings Nothing
+    (iconRes, iconView) <- mreq imageField uploadSettings (projectIcon <$> mp)
+    -- (mFileRes, iconView) <- case mp of
+    --     Nothing -> fmap (first (fmap Just)) $ mreq fileField uploadSettings Nothing
+    --     Just p -> mopt fileField uploadSettings Nothing
 
-    mIconRes <- lift $ traverse (traverse uploadImage) mFileRes
+    -- mIconRes <- lift $ traverse (traverse uploadImage) mFileRes
 
-    let iconRes = fmap (fromMaybe (projectIcon $ fromJust mp)) mIconRes
+    let --iconRes = fmap (fromMaybe (projectIcon $ fromJust mp)) mIconRes
         contentRes = pure $ maybe [] projectContent mp
         projectRes = Project <$> titleRes <*> urlRes <*> pubRes <*> iconRes <*> contentRes
+        mkWidget :: FieldView App -> Text -> Maybe Text -> Widget
+        mkWidget theView theLabel mtt =
+            [whamlet|
+                $with hasErr <- isJust $ fvErrors theView
+                    <div .form-group :hasErr:.has-error>
+                        <label for=#{fvId theView}>#{theLabel}
+                        ^{fvInput theView}
+                        $maybe err <- fvErrors theView
+                            <small .form-text .text-danger>#{err}
+                        $maybe tt <- mtt
+                            <small .form-text .text-muted>#{tt}
+            |]
         projectWidget =
             [whamlet|
                 #{extra}
-                <div .form-group>
-                    <label for=#{fvId titleView}>Title
-                    ^{fvInput titleView}
-                <div .form-group>
-                    <label for=#{fvId urlView}>Url
-                    ^{fvInput urlView}
-                    <small #urlHelp .form-text .text-muted>#{urlTip}
-                <div .form-group>
-                    <label for=#{fvId pubView}>Published
-                    ^{fvInput pubView}
-                    <small #pubHelp .form-text .text-muted>#{pubTip}
-                <div .form-group>
-                    <label for=#{fvId iconView}>Icon
-                    ^{fvInput iconView}
-                    <small #iconHelp .form-text .text-muted>#{uploadTip}
+                ^{mkWidget titleView "Title" Nothing}
+                ^{mkWidget urlView "Url" $ Just urlTip}
+                ^{mkWidget pubView "Published" $ Just pubTip}
+                ^{mkWidget iconView "Icon" $ Just uploadTip}
             |]
 
     -- if form failed but we uploaded an image, delete it
+        -- careful with this if we use imageField
+            -- need to check whether image == projectIcon <$> mp
     case projectRes of
         FormFailure _ ->
             case iconRes of

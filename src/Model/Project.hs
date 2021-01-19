@@ -21,7 +21,7 @@ import Model.Core
 data Component
     = C_ImageGroup [ImageId]
     | C_VideoEmbed Text
-    | C_Text MarkupBlockId
+    | C_Markup MarkupBlockId
     deriving (Show, Read)
 
 derivePersistField "Component"

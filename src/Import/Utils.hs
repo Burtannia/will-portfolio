@@ -7,7 +7,7 @@ module Import.Utils where
 
 import Import.NoFoundation
 import Foundation
-import qualified Data.List as L (tail)
+import qualified Data.List as L (tail, init)
 import Data.Time.Clock (NominalDiffTime)
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4)
 
@@ -50,6 +50,29 @@ moveBackward _ [x] = [x]
 moveBackward x (y:z:ys)
     | x == z    = z : y : ys
     | otherwise = y : moveBackward x (z:ys)
+
+moveIxUp :: Int -> [a] -> [a]
+moveIxUp n = map snd . go . withIndexes
+    where
+        go [] = []
+        go [x] = [x]
+        go (x@(m, _) : y : xs)
+            | n == m = y : x : xs
+            | otherwise = x : go (y:xs)
+
+moveIxDown :: Int -> [a] -> [a]
+moveIxDown n = map snd . go . withIndexes
+    where
+        go [] = []
+        go [x] = [x]
+        go (x : y@(m, _) : xs)
+            | n == m = y : x : xs
+            | otherwise = x : go (y:xs)
+
+topTail :: [a] -> [a]
+topTail xs
+    | length xs < 2 = xs
+    | otherwise = L.init $ L.tail xs
 
 mkFormId :: [Text] -> Text
 mkFormId ts = foldr (<>) "" $ intersperse "" ts
