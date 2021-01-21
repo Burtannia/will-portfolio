@@ -1,0 +1,2 @@
+$forall imgId <- imgIds
+    <img src=@{ImagesR $ mkImageUrl imgId} .img-fluid>

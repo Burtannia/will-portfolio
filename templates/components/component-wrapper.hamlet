@@ -1,0 +1,3 @@
+<div .comp-wrapper data-comp-index=#{ix}>
+    ^{compWidget}
+    ^{compControls}

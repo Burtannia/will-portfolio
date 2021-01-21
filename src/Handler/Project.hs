@@ -31,6 +31,9 @@ getProjectR projectId = do
     pForm <- genFormIdentify pFormIdent $ projectForm $ Just project
 
     let pWidget = mkModal "Edit Project" pForm
+        newCompWidget = getNewComponent
+        comps = withIndexes $ projectContent project
+        compWidgets = map (uncurry $ getComponent projectId) comps
 
     defaultLayout $ do
         setTitle $ toHtml $ projectTitle project
@@ -39,8 +42,10 @@ getProjectR projectId = do
 postProjectR :: ProjectId -> Handler Html
 postProjectR projectId = do
     muser <- maybeAuth
-    project <- runDB $ get404 projectId
-    let isAdmin = maybe False (userIsAdmin . entityVal) muser
+    ep <- runDB $ getEntity projectId >>= maybe notFound return
+
+    let project = entityVal ep
+        isAdmin = maybe False (userIsAdmin . entityVal) muser
         published = projectPublished project
 
     when (not isAdmin && not published) notFound
@@ -49,6 +54,9 @@ postProjectR projectId = do
 
     let pForm = (pWidget', pEnctype)
         pWidget = mkModal "Edit Project" pForm
+        newCompWidget = postNewComponent ep
+        comps = withIndexes $ projectContent project
+        compWidgets = map (uncurry $ postComponent projectId) comps
 
     case pResult of
         FormSuccess newProject -> do
@@ -161,46 +169,26 @@ projectForm mp extra = do
     (titleRes, titleView) <- mreq textField defs (projectTitle <$> mp)
     (urlRes, urlView) <- mreq pUrlField defs (projectUrl <$> mp)
     (pubRes, pubView) <- mreq checkBoxField (withClass "lg-checkbox" "") (projectPublished <$> mp)
-    (iconRes, iconView) <- mreq imageField uploadSettings (projectIcon <$> mp)
-    -- (mFileRes, iconView) <- case mp of
-    --     Nothing -> fmap (first (fmap Just)) $ mreq fileField uploadSettings Nothing
-    --     Just p -> mopt fileField uploadSettings Nothing
+    (iconRes, iconView) <- mreq imageField imageSettings (projectIcon <$> mp)
 
-    -- mIconRes <- lift $ traverse (traverse uploadImage) mFileRes
-
-    let --iconRes = fmap (fromMaybe (projectIcon $ fromJust mp)) mIconRes
-        contentRes = pure $ maybe [] projectContent mp
+    let contentRes = pure $ maybe [] projectContent mp
         projectRes = Project <$> titleRes <*> urlRes <*> pubRes <*> iconRes <*> contentRes
-        mkWidget :: FieldView App -> Text -> Maybe Text -> Widget
-        mkWidget theView theLabel mtt =
-            [whamlet|
-                $with hasErr <- isJust $ fvErrors theView
-                    <div .form-group :hasErr:.has-error>
-                        <label for=#{fvId theView}>#{theLabel}
-                        ^{fvInput theView}
-                        $maybe err <- fvErrors theView
-                            <small .form-text .text-danger>#{err}
-                        $maybe tt <- mtt
-                            <small .form-text .text-muted>#{tt}
-            |]
         projectWidget =
             [whamlet|
                 #{extra}
-                ^{mkWidget titleView "Title" Nothing}
-                ^{mkWidget urlView "Url" $ Just urlTip}
-                ^{mkWidget pubView "Published" $ Just pubTip}
-                ^{mkWidget iconView "Icon" $ Just uploadTip}
+                ^{mkWidgetBs4 titleView "Title" Nothing}
+                ^{mkWidgetBs4 urlView "Url" $ Just urlTip}
+                ^{mkWidgetBs4 pubView "Published" $ Just pubTip}
+                ^{mkWidgetBs4 iconView "Icon" $ Just uploadTip}
             |]
 
-    -- if form failed but we uploaded an image, delete it
-        -- careful with this if we use imageField
-            -- need to check whether image == projectIcon <$> mp
+    -- if form failed but we saved a new image, delete it
     case projectRes of
         FormFailure _ ->
             case iconRes of
-                FormSuccess imgId -> do
-                    _ <- lift $ deleteImage imgId
-                    return ()
+                FormSuccess imgId ->
+                    when (Just imgId /= fmap projectIcon mp) $
+                        lift $ deleteImage imgId
                 _ -> return ()
 
         _ -> return ()
@@ -213,15 +201,6 @@ projectForm mp extra = do
         pUrlField = check validateUrl textField
         pubTip = "Projects that are not published will only be viewable by admins." :: Text
         uploadTip = "This image will be shown as the thumbnail for the project on the homepage." :: Text
-        uploadSettings = FieldSettings
-            { fsLabel = ""
-            , fsTooltip = Nothing
-            , fsId = Nothing
-            , fsName = Nothing
-            , fsAttrs =
-                [ ("accept", ".jpg, .png, .gif")
-                , ("class", "form-control-file") ]
-            }
         validateUrl t =
             if isValid
                 then Right t

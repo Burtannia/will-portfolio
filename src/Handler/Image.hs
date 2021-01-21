@@ -51,3 +51,33 @@ mkImagePath dir img = dir ++ '/' : (unpack $ imageUuid img)
 
 mkImageUrl :: ImageId -> Route Static
 mkImageUrl imgId = StaticRoute [toPathPiece imgId] []
+
+imageField :: Field Handler ImageId
+imageField = Field
+    { fieldParse = \texts files ->
+        case files of
+            [] ->
+                case texts of
+                    [] -> return $ Right Nothing
+                    imgIdText:_ -> do
+                        let trim = pack . topTail . unpack
+                        mimg <- runDB $ getBy $ UniqueImageId $ trim imgIdText
+                        return $ maybe (Left "Invalid image ID") (Right . Just . entityKey) mimg
+            file:_ -> do
+                imgId <- uploadImage file
+                return $ Right $ Just imgId
+    , fieldView = \id' name attrs eval isReq ->
+        case eval of
+            Left _ ->
+                [whamlet|
+                    <input id=#{id'} name=#{name} *{attrs} type=file :isReq:required>
+                |]
+            Right imgId ->
+                [whamlet|
+                    <div>
+                        <input type="hidden" name=#{name} value=#{tshow imgId}>
+                        <img .thumbnail .img-fluid src=@{ImagesR $ mkImageUrl imgId}>
+                        <input id=#{id'} name=#{name} *{attrs} type=file>
+                |]
+    , fieldEnctype = Multipart
+    }

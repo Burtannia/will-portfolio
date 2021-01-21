@@ -45,3 +45,23 @@ function makeAlertSuccess(msg) {
 function makeAlertInfo(msg) {
     makeAlert(msg, "alert-Info");
 }
+
+var summernoteSettings = {
+    minHeight: 200,
+    dialogsInBody: true,
+    styleTags: [
+        { title: 'Header', tag: 'h5', className: 'markup-header', value: 'h5' },
+        { title: 'Sub-Header', tag: 'h6', className: 'markup-sub-header', value: 'h6' },
+        { title: 'Content', tag: 'p', className: 'markup-content', value: 'p' },
+        { title: 'Footnote', tag: 'p', className: 'markup-footnote', value: 'p' }
+    ],
+    toolbar: [
+        ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+        ['fontsize', ['fontsize']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link']],
+        ['view', ['fullscreen']]
+    ]
+}

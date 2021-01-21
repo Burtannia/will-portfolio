@@ -11,6 +11,31 @@ import qualified Data.List as L (tail, init)
 import Data.Time.Clock (NominalDiffTime)
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4)
 
+imageSettings :: FieldSettings App
+imageSettings = FieldSettings
+    { fsLabel = ""
+    , fsTooltip = Nothing
+    , fsId = Nothing
+    , fsName = Nothing
+    , fsAttrs =
+        [ ("accept", ".jpg, .png, .gif")
+        , ("class", "form-control-file") ]
+    }
+
+mkWidgetBs4 :: FieldView App -> Text -> Maybe Text -> Widget
+mkWidgetBs4 theView theLabel mtt =
+    [whamlet|
+        $with hasErr <- isJust $ fvErrors theView
+            <div .form-group :hasErr:.has-error>
+                $if theLabel /= ""
+                    <label for=#{fvId theView}>#{theLabel}
+                ^{fvInput theView}
+                $maybe err <- fvErrors theView
+                    <small .form-text .text-danger>#{err}
+                $maybe tt <- mtt
+                    <small .form-text .text-muted>#{tt}
+    |]
+
 sequence2 :: Monad m => (m a, b) -> m (a, b)
 sequence2 = fmap swap . sequence . swap
 

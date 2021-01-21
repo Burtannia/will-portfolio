@@ -1,0 +1,5 @@
+<div .controls .mt-2>
+    ^{editWidget}
+    <button .btn .btn-secondary ##{compUpId}>Up
+    <button .btn .btn-secondary ##{compDownId}>Down
+    <button ##{compDelId} type="button" .btn .btn-danger>Delete
