@@ -13,4 +13,4 @@
 
 /projects/#ProjectId ProjectR GET POST PATCH DELETE
 
-/privacy PrivacyR GET
+/privacy PrivacyR GET DELETE

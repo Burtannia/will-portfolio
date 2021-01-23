@@ -46,3 +46,5 @@
 <footer .footer>
     <p .text-muted .text-center>
         #{appCopyright $ appSettings master}
+        \ - #
+        <a href=@{PrivacyR} .text-muted>Privacy Policy (GDPR)
