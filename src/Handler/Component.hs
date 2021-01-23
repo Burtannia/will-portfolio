@@ -185,14 +185,3 @@ compForm (CC_Markup mmId) extra = do
             |]
 
     return (res, wgt)
-
-bs4IconSettings :: MultiSettings site
-bs4IconSettings = MultiSettings
-    "btn btn-secondary"
-    "btn btn-danger"
-    "form-text text-muted"
-    "has-error"
-    addIcon delIcon Nothing
-    where
-        addIcon = Just [shamlet|<i .lni .lni-plus>|]
-        delIcon = Just [shamlet|<i .bi .bi-trash-fill>|]
