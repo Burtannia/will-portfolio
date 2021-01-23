@@ -75,11 +75,23 @@ $('##{rawJS compDownId}').click(function() {
 function moveUp(x) {
     var el = $(x)
     if (el.not(':first-child'))
+    {
         el.prev().before(el);
+        
+        var ix = el.data('comp-index');
+        el.data('comp-index', ix - 1);
+        el.prev().data('comp-index', ix);
+    }
 }
 
 function moveDown(x) {
     var el = $(x)
     if (el.not(':last-child'))
+    {
         el.next().after(el);
+
+        var ix = el.data('comp-index');
+        el.data('comp-index', ix + 1);
+        el.next().data('comp-index', ix);
+    }
 }

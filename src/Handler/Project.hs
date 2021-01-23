@@ -56,13 +56,12 @@ postProjectR projectId = do
         pWidget = mkModal "Edit Project" pForm
         newCompWidget = postNewComponent ep
         comps = withIndexes $ projectContent project
-        compWidgets = map (uncurry $ postComponent projectId) comps
+        compWidgets = map (uncurry $ postComponent ep) comps
 
     case pResult of
         FormSuccess newProject -> do
             let oldIcon = projectIcon project
                 newIcon = projectIcon newProject
-            liftIO $ print $ oldIcon == newIcon
             runDB $ replace projectId newProject
 
             when (oldIcon /= newIcon) $ deleteImage oldIcon
@@ -112,7 +111,7 @@ patchProjectR projectId = do
             CompUp ix
                 | ix >= 0 && ix < length cs -> do
                     runDB $ update projectId $
-                        [ ProjectContent =. moveIxUp ix cs ]
+                        [ ProjectContent =. moveIxLeft ix cs ]
                     sendResponse ("Project updated" :: Text)
                 | otherwise -> sendResponseStatus status500
                     ("Index out of bounds " <> tshow ix)
@@ -120,7 +119,7 @@ patchProjectR projectId = do
             CompDown ix
                 | ix >= 0 && ix < length cs -> do
                     runDB $ update projectId $
-                        [ ProjectContent =. moveIxDown ix cs ]
+                        [ ProjectContent =. moveIxRight ix cs ]
                     sendResponse ("Project updated" :: Text)
                 | otherwise -> sendResponseStatus status500
                     ("Index out of bounds " <> tshow ix)

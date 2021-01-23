@@ -10,6 +10,7 @@ import Foundation
 import qualified Data.List as L (tail, init)
 import Data.Time.Clock (NominalDiffTime)
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4)
+import Yesod.Form.MultiInput
 
 imageSettings :: FieldSettings App
 imageSettings = FieldSettings
@@ -31,10 +32,34 @@ mkWidgetBs4 theView theLabel mtt =
                     <label for=#{fvId theView}>#{theLabel}
                 ^{fvInput theView}
                 $maybe err <- fvErrors theView
-                    <small .form-text .text-danger>#{err}
+                    <div .invalid-feedback .d-block>#{err}
                 $maybe tt <- mtt
                     <small .form-text .text-muted>#{tt}
     |]
+
+mkMvWidgetBs4 :: MultiView App -> Widget
+mkMvWidgetBs4 mv =
+    [whamlet|
+        $with hasErr <- isJust $ fvErrors $ mvAddBtn mv
+            <div.form-group :hasErr:.has-error>
+                ^{fvInput $ mvCounter mv}
+
+                $forall fv <- mvFields mv
+                    ^{helper fv}
+
+                ^{helper $ mvAddBtn mv}
+    |]
+    where
+        helper fv =
+            [whamlet|
+                ^{fvInput fv}
+
+                $maybe err <- fvErrors fv
+                    <div .invalid-feedback .d-block>#{err}
+
+                $maybe tt <- fvTooltip fv
+                    <small .form-text .text-muted>#{tt}
+            |]
 
 sequence2 :: Monad m => (m a, b) -> m (a, b)
 sequence2 = fmap swap . sequence . swap
@@ -76,8 +101,8 @@ moveBackward x (y:z:ys)
     | x == z    = z : y : ys
     | otherwise = y : moveBackward x (z:ys)
 
-moveIxUp :: Int -> [a] -> [a]
-moveIxUp n = map snd . go . withIndexes
+moveIxRight :: Int -> [a] -> [a]
+moveIxRight n = map snd . go . withIndexes
     where
         go [] = []
         go [x] = [x]
@@ -85,8 +110,8 @@ moveIxUp n = map snd . go . withIndexes
             | n == m = y : x : xs
             | otherwise = x : go (y:xs)
 
-moveIxDown :: Int -> [a] -> [a]
-moveIxDown n = map snd . go . withIndexes
+moveIxLeft :: Int -> [a] -> [a]
+moveIxLeft n = map snd . go . withIndexes
     where
         go [] = []
         go [x] = [x]

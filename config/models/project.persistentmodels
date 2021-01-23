@@ -6,3 +6,4 @@ Project
     content [Component]
     UniqueProjectUrl url
     Primary url
+    deriving Show

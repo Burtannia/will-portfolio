@@ -44,8 +44,11 @@ postNewComponent ep = do
             case formResult of
                 FormSuccess comp -> do
                     let oldContent = projectContent $ entityVal ep
+
                     liftHandler $ runDB $
                         update (entityKey ep) [ ProjectContent =. oldContent ++ [comp] ]
+                    
+                    redirect $ ProjectR $ entityKey ep
 
                 FormMissing -> return ()
 
@@ -65,8 +68,32 @@ getComponent projectId ix c = do
         compControls = mkCompControls projectId ix c compEditForm
     $(widgetFile "components/component-wrapper")
 
-postComponent :: ProjectId -> Int -> Component -> Widget
-postComponent projectId ix c = return ()
+postComponent :: Entity Project -> Int -> Component -> Widget
+postComponent ep ix c = do
+    let projectId = entityKey ep
+        formId = mkCompFormId projectId ix
+    ((fRes, fWidget), fEnctype) <- liftHandler $
+        runFormIdentify formId $ compForm $ toCreateComp c
+    
+    case fRes of
+        FormSuccess comp -> do
+            let oldContent = projectContent $ entityVal ep
+            
+            liftHandler $ runDB $ update projectId
+                [ ProjectContent =. oldContent /! (comp, ix) ]
+
+            redirect $ ProjectR projectId
+
+        FormMissing -> return ()
+
+        FormFailure errs -> do
+            liftIO $ putStrLn $ "postComponent " <> tshow ix
+            liftIO $ print errs
+
+    let compEditForm = (fWidget, fEnctype)
+        compWidget = displayComp c
+        compControls = mkCompControls projectId ix c compEditForm
+    $(widgetFile "components/component-wrapper")
 
 mkCompFormId :: ProjectId -> Int -> Text
 mkCompFormId projectId ix = toPathPiece projectId <> "-comp-" <> tshow ix
@@ -113,18 +140,14 @@ data CreateComp
     deriving Show
 
 compForm :: CreateComp -> Form Component
-compForm (CC_ImageGroup mis) extra = do
-    let vals = fromMaybe [] mis
-    
-    (imgRes, imgView) <- mmulti imageField imageSettings vals 1 bs4IconSettings
+compForm (CC_ImageGroup mis) extra = do  
+    (imgRes, imgView) <- mreq multiImageField imageSettings mis
 
     let res = C_ImageGroup <$> imgRes
         wgt =
             [whamlet|
                 #{extra}
-                $forall fv <- mvFields imgView
-                    ^{mkWidgetBs4 fv "" Nothing}
-                ^{fvInput $ mvAddBtn imgView}
+                ^{mkWidgetBs4 imgView "Images" Nothing}
             |]
     
     return (res, wgt)
@@ -169,11 +192,7 @@ bs4IconSettings = MultiSettings
     "btn btn-danger"
     "form-text text-muted"
     "has-error"
-    addIcon delIcon (Just errW)
+    addIcon delIcon Nothing
     where
         addIcon = Just [shamlet|<i .lni .lni-plus>|]
         delIcon = Just [shamlet|<i .bi .bi-trash-fill>|]
-        errW err =
-            [whamlet|
-                <div .invalid-feedback>#{err}
-            |]

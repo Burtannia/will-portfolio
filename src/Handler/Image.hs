@@ -76,8 +76,23 @@ imageField = Field
                 [whamlet|
                     <div>
                         <input type="hidden" name=#{name} value=#{tshow imgId}>
-                        <img .thumbnail .img-fluid src=@{ImagesR $ mkImageUrl imgId}>
+                        <img .thumbnail .img-fluid .mb-2 src=@{ImagesR $ mkImageUrl imgId}>
                         <input id=#{id'} name=#{name} *{attrs} type=file>
                 |]
+    , fieldEnctype = Multipart
+    }
+
+multiImageField :: Field Handler [ImageId]
+multiImageField = Field
+    { fieldParse = \_ files ->
+        if null files
+            then return $ Right Nothing
+            else do
+                imgs <- mapM uploadImage files
+                return $ Right $ Just imgs
+    , fieldView = \id' name attrs _ isReq ->
+        [whamlet|
+            <input ##{id'} name=#{name} *{attrs} type=file :isReq:required multiple>
+        |]
     , fieldEnctype = Multipart
     }
