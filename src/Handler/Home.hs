@@ -13,7 +13,7 @@ import Handler.Image
 
 theTitle :: Html
 theTitle = toHtml
-    ("Will Burton - Gamer & Hobbyist Map Designer" :: Text)
+    ("Will Burton | Gamer & Hobbyist Map Designer" :: Text)
 
 getHomeR :: Handler Html
 getHomeR = do
