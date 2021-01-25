@@ -22,7 +22,7 @@
     text-align: center;
     font-style: italic;
     margin-bottom: 0;
-    color: #a1232c;
+    color: #e79439;
 }
 
 .markup-header + .markup-sub-header {

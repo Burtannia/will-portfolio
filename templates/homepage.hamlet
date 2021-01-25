@@ -6,7 +6,7 @@ $maybe profile <- mprofile
         <div .col-lg-8>
             <h3>#{profileName profile}
             <p>#{profileBio profile}
-            <div .social-links>
+            <div .social-links .my-auto>
                 $maybe url <- profileFacebook profile
                     <a href=#{url}>
                         <i .lni .lni-facebook-original>

@@ -12,6 +12,7 @@
 nav {
     background-color: white;
     min-height: 4rem;
+    border-bottom: 1px solid #e79439;
 }
 
 /* Main Content */
