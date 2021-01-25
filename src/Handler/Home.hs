@@ -56,6 +56,10 @@ postHomeR = do
                         (replace . entityKey)
                         mprofile'
                 runDB $ dbF profile
+
+                for_ mprofile' $ \ep ->
+                    deleteImage $ profileAvatar $ entityVal ep
+
                 return $ Just profile
 
             FormMissing ->

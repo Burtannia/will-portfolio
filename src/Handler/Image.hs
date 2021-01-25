@@ -76,7 +76,8 @@ imageField = Field
                 [whamlet|
                     <div>
                         <input type="hidden" name=#{name} value=#{tshow imgId}>
-                        <img .thumbnail .img-fluid .mb-2 src=@{ImagesR $ mkImageUrl imgId}>
+                        <img src=@{ImagesR $ mkImageUrl imgId}
+                            .thumbnail .img-fluid .mb-2 style="max-width: 300px">
                         <input id=#{id'} name=#{name} *{attrs} type=file>
                 |]
     , fieldEnctype = Multipart
