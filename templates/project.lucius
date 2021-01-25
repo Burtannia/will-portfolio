@@ -48,12 +48,18 @@
 }
 
 .image-thumbnails img {
-    max-width: 150px;
+    width: 150px;
     margin-top: 0.5rem;
     margin-left: 0.25rem;
     margin-right: 0.25rem;
     opacity: 0.7;
     transition: opacity 0.25s ease;
+}
+
+@media (max-width: 575px) {
+    .image-thumbnails img {
+        width: 80px;
+    }
 }
 
 .image-thumbnails img:hover {

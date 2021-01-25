@@ -1,4 +1,4 @@
 <div .row .justify-content-center>
-    <div .col-lg-6>
+    <div .col-lg-8>
         <div .iframe-wrapper>
             <iframe src=#{url} frameborder="0" allowfullscreen="true" scrolling="no">
