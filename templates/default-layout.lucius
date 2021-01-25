@@ -12,6 +12,12 @@
     margin-top: -0.15rem;
 }
 
+hr {
+    background-color: #e79439;
+    border: none;
+    opacity: 0.3;
+}
+
 /* Navbar */
 
 nav {
