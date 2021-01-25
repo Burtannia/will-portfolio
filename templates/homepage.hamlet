@@ -6,21 +6,26 @@ $maybe profile <- mprofile
         <div .col-lg-8>
             <h3>#{profileName profile}
             <p>#{profileBio profile}
-            <div>
+            <div .social-links>
                 $maybe url <- profileFacebook profile
-                    <a href=#{url}>Facebook
+                    <a href=#{url}>
+                        <i .lni .lni-facebook-original>
                 
                 $maybe url <- profileInstagram profile
-                    <a href=#{url}>Instagram
+                    <a href=#{url}>
+                        <i .lni .lni-instagram-original>
 
                 $maybe url <- profileTwitter profile
-                    <a href=#{url}>Twitter
+                    <a href=#{url}>
+                        <i .lni .lni-twitter-original>
 
                 $maybe url <- profileTwitch profile
-                    <a href=#{url}>Twitch
+                    <a href=#{url}>
+                        <i .lni .lni-twitch>
                     
                 $maybe url <- profileYoutube profile
-                    <a href=#{url}>YouTube
+                    <a href=#{url}>
+                        <i .lni .lni-youtube>
 
 <hr>
 

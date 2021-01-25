@@ -57,8 +57,10 @@ postHomeR = do
                         mprofile'
                 runDB $ dbF profile
 
-                for_ mprofile' $ \ep ->
-                    deleteImage $ profileAvatar $ entityVal ep
+                for_ mprofile' $ \ep -> do
+                    let oldAv = profileAvatar $ entityVal ep
+                        newAv = profileAvatar profile
+                    when (oldAv /= newAv) $ deleteImage oldAv
 
                 return $ Just profile
 

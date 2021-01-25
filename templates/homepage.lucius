@@ -35,6 +35,20 @@
     }
 }
 
+.social-links a:hover {
+    text-decoration: none;
+    opacity: 0.2;
+}
+
+.social-links i {
+    font-size: 1.25rem;
+    color: black;
+}
+
+.social-links a:not(:first-child) i {
+    margin-left: 0.25rem;
+}
+
 textarea {
     min-height: 12rem;
 }
