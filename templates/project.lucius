@@ -41,8 +41,24 @@
 
 /* Image Group */
 
-.slide-image {
+.image-thumbnails {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 
+.image-thumbnails img {
+    max-width: 150px;
+    margin-top: 0.5rem;
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+    opacity: 0.7;
+    transition: opacity 0.25s ease;
+}
+
+.image-thumbnails img:hover {
+    cursor: pointer;
+    opacity: 1;
 }
 
 /* Iframes */

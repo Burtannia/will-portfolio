@@ -11,3 +11,8 @@
             <a .carousel-control-next href="##{carouselId}" role="button" data-slide="next">
                 <span .carousel-control-next-icon aria-hidden="true">
                 <span .sr-only>Next
+        
+        <div .image-thumbnails>
+            $forall (ix, imgId) <- withIndexes imgIds
+                <img .img-fluid src=@{ImagesR $ mkImageUrl imgId}
+                    data-target="##{carouselId}" data-slide-to="#{ix}">
