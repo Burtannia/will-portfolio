@@ -10,8 +10,6 @@ import Import
 import Handler.Modal
 import Handler.Project
 import Handler.Image
-import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4)
-import Text.Julius (RawJS (..))
 
 theTitle :: Html
 theTitle = toHtml

@@ -19,7 +19,7 @@ getNewComponent = do
     let tabWidgets = map (uncurry $ genNewCompTab modalId) $ withIndexes blankComps
     $(widgetFile "components/new-component")
     where
-        genNewCompTab modalId ix (compTitle, compId, cc) = do
+        genNewCompTab modalId ix (_, compId, cc) = do
             let isFirst = ix == 0
                 formId = compId <> "-form"
             (formWidget, enctype) <- liftHandler $
@@ -65,7 +65,7 @@ getComponent projectId ix c = do
         genFormIdentify formId $ compForm $ toCreateComp c
 
     let compWidget = displayComp c
-        compControls = mkCompControls projectId ix c compEditForm
+        compControls = mkCompControls projectId compEditForm
     $(widgetFile "components/component-wrapper")
 
 postComponent :: Entity Project -> Int -> Component -> Widget
@@ -92,7 +92,7 @@ postComponent ep ix c = do
 
     let compEditForm = (fWidget, fEnctype)
         compWidget = displayComp c
-        compControls = mkCompControls projectId ix c compEditForm
+        compControls = mkCompControls projectId compEditForm
     $(widgetFile "components/component-wrapper")
 
 mkCompFormId :: ProjectId -> Int -> Text
@@ -105,11 +105,11 @@ displayComp (C_ImageGroup imgIds) = do
 displayComp (C_VideoEmbed url) = $(widgetFile "components/video-embed")
 displayComp (C_Markup mId) = do
     mmarkup <- liftHandler $ runDB $ get mId
-    for mmarkup $ \markup -> $(widgetFile "components/markup")
+    for_ mmarkup $ \markup -> $(widgetFile "components/markup")
     return ()
 
-mkCompControls :: ProjectId -> Int -> Component -> (Widget, Enctype) -> Widget
-mkCompControls projectId ix c formBundle = do
+mkCompControls :: ProjectId -> (Widget, Enctype) -> Widget
+mkCompControls projectId formBundle = do
     compUpId <- newIdent
     compDownId <- newIdent
     compDelId <- newIdent

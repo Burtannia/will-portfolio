@@ -22,7 +22,6 @@ import Yesod.Auth.Dummy
 import Yesod.Auth.OAuth2 (oauth2Url)
 import Yesod.Auth.OAuth2.Google (oauth2GoogleScoped)
 
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -138,8 +137,6 @@ instance Yesod App where
 
         muser <- maybeAuthPair
         mcurrentRoute <- getCurrentRoute
-
-        let isAdmin = maybe False (userIsAdmin . snd) muser
 
         -- Define the menu items of the header.
         let menuItems =

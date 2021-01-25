@@ -16,7 +16,6 @@ import Handler.Component
 import Data.Aeson.Types
 import Text.Julius (RawJS (..))
 import qualified Data.Text as T (foldr)
-import Data.Maybe (fromJust)
 import qualified Data.List as L ((!!))
 
 getProjectR :: ProjectId -> Handler Html
