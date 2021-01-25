@@ -22,7 +22,9 @@
 
 <!-- Page Contents -->
 
-<div .container #message-wrapper>
+<div #spacer>
+
+<div .container #messageWrapper>
     $# $if not $ Just HomeR == mcurrentRoute
     $#     <ul .breadcrumb>
     $#         $forall bc <- parents

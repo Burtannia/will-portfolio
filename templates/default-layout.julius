@@ -1,10 +1,10 @@
-$(function() {
+/*$(function() {
     setTimeout(function() {
         $('#message').fadeOut(300, function() { 
             $(this).remove();
         });
     }, 5000);
-});
+});*/
 
 $(function() {
     var err = $('.invalid-feedback');

@@ -1,7 +1,7 @@
 /* Profile */
 
 #profile {
-    margin-bottom: 3rem;
+    margin-bottom: 5rem;
 }
 
 #profile p {
