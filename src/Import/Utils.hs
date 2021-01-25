@@ -12,9 +12,15 @@ import Data.Time.Clock (NominalDiffTime)
 import Yesod.Form.Bootstrap4 (BootstrapFormLayout (..), renderBootstrap4)
 import Yesod.Form.MultiInput
 
+bfs :: FieldSettings App -> FieldSettings App
+bfs = withClass "form-control"
+
 imageSettings :: FieldSettings App
-imageSettings = FieldSettings
-    { fsLabel = ""
+imageSettings = imageSettings' ""
+
+imageSettings' :: SomeMessage App -> FieldSettings App
+imageSettings' label = FieldSettings
+    { fsLabel = label
     , fsTooltip = Nothing
     , fsId = Nothing
     , fsName = Nothing
@@ -66,6 +72,9 @@ sequence2 = fmap swap . sequence . swap
 
 withClass :: Text -> FieldSettings App -> FieldSettings App
 withClass t fs = fs {fsAttrs = addClass t $ fsAttrs fs}
+
+withTooltip :: SomeMessage App -> FieldSettings App -> FieldSettings App
+withTooltip tt fs = fs {fsTooltip = Just tt}
 
 formatDiffTime :: NominalDiffTime -> String
 formatDiffTime dt = go (floor $ toRational dt) incs

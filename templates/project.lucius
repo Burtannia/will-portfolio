@@ -77,10 +77,3 @@
     outline: none !important;
     box-shadow: none !important;
 }
-
-.bottom-right {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 100;
-}

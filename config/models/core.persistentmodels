@@ -13,3 +13,12 @@ Image
     Primary uuid
 MarkupBlock
     content Html
+Profile
+    name Text
+    bio Text
+    avatar ImageId
+    facebook Text Maybe
+    instagram Text Maybe
+    twitch Text Maybe
+    twitter Text Maybe
+    youtube Text Maybe

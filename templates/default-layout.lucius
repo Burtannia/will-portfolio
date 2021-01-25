@@ -4,17 +4,24 @@
 }
 
 #message-wrapper {
-    margin-top: 10rem;
+    margin-top: 8rem;
 }
 
 /* Navbar */
 
 nav {
     background-color: white;
+    min-height: 4rem;
 }
 
 /* Main Content */
 
+.bottom-right {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 100;
+}
 
 /* Footer */
 

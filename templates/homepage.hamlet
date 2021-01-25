@@ -1,8 +1,33 @@
-<div .projects-header>
-    <h3 .text-center>My Projects
-    $if isAdmin
-        <div .new-project-wrapper>
-            ^{npWidget}
+$maybe profile <- mprofile
+    <div .row .align-items-center .justify-content-lg-center #profile>
+        <div .col-lg-4>
+            <img src=@{ImagesR $ mkImageUrl $ profileAvatar profile} .img-fluid .rounded-circle .d-block .mx-auto>
+        
+        <div .col-lg-8>
+            <h3>#{profileName profile}
+            <p>#{profileBio profile}
+            <div>
+                $maybe url <- profileFacebook profile
+                    <a href=#{url}>Facebook
+                
+                $maybe url <- profileInstagram profile
+                    <a href=#{url}>Instagram
+
+                $maybe url <- profileTwitter profile
+                    <a href=#{url}>Twitter
+
+                $maybe url <- profileTwitch profile
+                    <a href=#{url}>Twitch
+                    
+                $maybe url <- profileYoutube profile
+                    <a href=#{url}>YouTube
+
+<hr>
+
+$if isAdmin
+    <div .profile-controls>
+        ^{editProfile}
+        ^{npWidget}
 
 <div .row .projects-wrapper>
     $forall ep <- projects
