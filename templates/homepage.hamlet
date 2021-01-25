@@ -1,2 +1,16 @@
-<h2>Hello World
-^{npWidget}
+<div .projects-header>
+    <h3 .text-center>My Projects
+    $if isAdmin
+        <div .new-project-wrapper>
+            ^{npWidget}
+
+<div .row .projects-wrapper>
+    $forall ep <- projects
+        $with p <- entityVal ep
+            <div .col-sm-3>
+                <a .project-link href=@{ProjectR $ entityKey ep}>
+                    <div .project-preview>
+                        <img src=@{ImagesR $ mkImageUrl $ projectIcon p}>
+                    
+                        <div .project-overlay>
+                            <h5>#{projectTitle p}

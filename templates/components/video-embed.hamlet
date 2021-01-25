@@ -1,3 +1,4 @@
-<div .video-comp>
-    <div .iframe-wrapper>
-        <iframe src=#{url} frameborder="0" allowfullscreen="true" scrolling="no">
+<div .row .justify-content-center>
+    <div .col-lg-6>
+        <div .iframe-wrapper>
+            <iframe src=#{url} frameborder="0" allowfullscreen="true" scrolling="no">

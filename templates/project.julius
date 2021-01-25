@@ -11,3 +11,32 @@ $('#deleteProject').click(function() {
             makeAlertDanger("Something went wrong");
         });
 });
+
+$(function() {
+    if(#{rawJS isAdmin})
+    {
+        $('.comp-wrapper').each(function() {
+            $(this).addClass('highlight-comp');
+        });
+    }
+});
+
+$('#preview-mode').change(function() {
+    $('.controls').each(function() {
+        $(this).hide();
+    });
+
+    $('.comp-wrapper').each(function() {
+        $(this).removeClass('highlight-comp');
+    });
+});
+
+$('#edit-mode').change(function() {
+    $('.controls').each(function() {
+        $(this).show();
+    });
+    
+    $('.comp-wrapper').each(function() {
+        $(this).addClass('highlight-comp');
+    });
+});

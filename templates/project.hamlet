@@ -1,11 +1,20 @@
-<div .row>
-    ^{pWidget}
-    <button type="button" #deleteProject .btn .btn-danger>Delete Project
-    
-<h3>#{projectTitle project}
-<img src=@{ImagesR $ mkImageUrl $ projectIcon project}>
+<h3 .text-center>#{projectTitle project}
 
-^{newCompWidget}
+$if isAdmin
+    <div .bottom-right>
+        <div .btn-group .btn-group-toggle .view-mode data-toggle="buttons">
+            <label .btn .btn-secondary .active>
+                <input type="radio" name="options" #edit-mode autocomplete="off" checked>Edit
+            <label .btn .btn-secondary>
+                <input type="radio" name="options" #preview-mode autocomplete="off">Preview
 
-$forall cw <- compWidgets
-    ^{cw}
+    <div .controls>
+        ^{newCompWidget}
+        ^{pWidget}
+        <button type="button" #deleteProject .btn .btn-danger>Delete Project
+
+$# <img src=@{ImagesR $ mkImageUrl $ projectIcon project}>
+
+<div>
+    $forall cw <- compWidgets
+        ^{cw}

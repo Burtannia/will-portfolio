@@ -3,19 +3,24 @@
     margin-bottom: 1rem;
 }
 
+#message-wrapper {
+    margin-top: 10rem;
+}
+
 /* Navbar */
 
+nav {
+    background-color: white;
+}
 
 /* Main Content */
 
-#main-content {
-    margin-top: 10rem;
-}
 
 /* Footer */
 
 footer {
     padding: 0.8rem;
+    margin-top: 1rem;
 }
 
 footer p {

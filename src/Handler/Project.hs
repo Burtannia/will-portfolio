@@ -34,7 +34,7 @@ getProjectR projectId = do
         newCompWidget = getNewComponent
         comps = withIndexes $ projectContent project
         compWidgets = map (uncurry $ getComponent projectId) comps
-
+        
     defaultLayout $ do
         setTitle $ toHtml $ projectTitle project
         $(widgetFile "project")

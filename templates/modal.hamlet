@@ -1,7 +1,7 @@
 <button type="button" .#{msButtonClass}
     data-toggle="modal" data-target=##{modalId}>#{msButtonInner}
 
-<div .modal ##{modalId} tabindex="-1">
+<div .modal .fade ##{modalId} tabindex="-1">
     <div .modal-dialog .modal-lg>
         <div .modal-content>
             <div .modal-header>

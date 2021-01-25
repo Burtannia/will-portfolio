@@ -32,6 +32,9 @@ $('##{rawJS compUpId}').click(function() {
     var comp = $(this).parents('.comp-wrapper');
     var ix = comp.data('comp-index');
 
+    if (comp.is(':first-child'))
+        return;
+
     var action = {
         tag: "CompUp",
         contents: ix
@@ -53,6 +56,9 @@ $('##{rawJS compUpId}').click(function() {
 $('##{rawJS compDownId}').click(function() {
     var comp = $(this).parents('.comp-wrapper');
     var ix = comp.data('comp-index');
+
+    if (comp.is(':last-child'))
+        return;
 
     var action = {
         tag: "CompDown",

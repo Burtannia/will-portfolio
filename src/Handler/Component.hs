@@ -99,7 +99,9 @@ mkCompFormId :: ProjectId -> Int -> Text
 mkCompFormId projectId ix = toPathPiece projectId <> "-comp-" <> tshow ix
 
 displayComp :: Component -> Widget
-displayComp (C_ImageGroup imgIds) = $(widgetFile "components/image-group")
+displayComp (C_ImageGroup imgIds) = do
+    carouselId <- newIdent
+    $(widgetFile "components/image-group")
 displayComp (C_VideoEmbed url) = $(widgetFile "components/video-embed")
 displayComp (C_Markup mId) = do
     mmarkup <- liftHandler $ runDB $ get mId

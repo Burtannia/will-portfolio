@@ -22,7 +22,7 @@
 
 <!-- Page Contents -->
 
-<div .container>
+<div .container #message-wrapper>
     $# $if not $ Just HomeR == mcurrentRoute
     $#     <ul .breadcrumb>
     $#         $forall bc <- parents
@@ -37,10 +37,8 @@
                 <span aria-hidden="true">&times
 
 
-<div .container #main-content>
-    <div .row>
-        <div .col-md-12>
-            ^{widget}
+<div .container>
+    ^{widget}
 
 <!-- Footer -->
 <footer .footer>

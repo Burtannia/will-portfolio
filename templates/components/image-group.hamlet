@@ -1,2 +1,13 @@
-$forall imgId <- imgIds
-    <img src=@{ImagesR $ mkImageUrl imgId} .img-fluid>
+<div .row .justify-content-center>
+    <div .col-lg-6>
+        <div ##{carouselId} .carousel .slide data-ride="carousel">
+            <div .carousel-inner>
+                $forall (ix, imgId) <- withIndexes imgIds
+                    <div .carousel-item :ix == 0:.active>
+                        <img .rounded .d-block .slide-image .w-100 src=@{ImagesR $ mkImageUrl imgId}>
+            <a .carousel-control-prev href="##{carouselId}" role="button" data-slide="prev">
+                <span .carousel-control-prev-icon aria-hidden="true">
+                <span .sr-only>Previous
+            <a .carousel-control-next href="##{carouselId}" role="button" data-slide="next">
+                <span .carousel-control-next-icon aria-hidden="true">
+                <span .sr-only>Next
