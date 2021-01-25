@@ -58,8 +58,8 @@ postNewComponent ep = do
 
             $(widgetFile "components/new-component-tab")
 
-getComponent :: ProjectId -> Int -> Component -> Widget
-getComponent projectId ix c = do
+getComponent :: ProjectId -> Bool -> Int -> Component -> Widget
+getComponent projectId isAdmin ix c = do
     let formId = mkCompFormId projectId ix
     compEditForm <- liftHandler $
         genFormIdentify formId $ compForm $ toCreateComp c
@@ -68,8 +68,8 @@ getComponent projectId ix c = do
         compControls = mkCompControls projectId compEditForm
     $(widgetFile "components/component-wrapper")
 
-postComponent :: Entity Project -> Int -> Component -> Widget
-postComponent ep ix c = do
+postComponent :: Entity Project -> Bool -> Int -> Component -> Widget
+postComponent ep isAdmin ix c = do
     let projectId = entityKey ep
         formId = mkCompFormId projectId ix
     ((fRes, fWidget), fEnctype) <- liftHandler $

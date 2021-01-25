@@ -1,3 +1,4 @@
 <div .comp-wrapper data-comp-index=#{ix}>
     ^{compWidget}
-    ^{compControls}
+    $if isAdmin
+        ^{compControls}

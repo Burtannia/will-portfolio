@@ -32,7 +32,7 @@ getProjectR projectId = do
     let pWidget = mkModal "Edit Project" pForm
         newCompWidget = getNewComponent
         comps = withIndexes $ projectContent project
-        compWidgets = map (uncurry $ getComponent projectId) comps
+        compWidgets = map (uncurry $ getComponent projectId isAdmin) comps
         
     defaultLayout $ do
         setTitle $ toHtml $ projectTitle project
@@ -55,7 +55,7 @@ postProjectR projectId = do
         pWidget = mkModal "Edit Project" pForm
         newCompWidget = postNewComponent ep
         comps = withIndexes $ projectContent project
-        compWidgets = map (uncurry $ postComponent ep) comps
+        compWidgets = map (uncurry $ postComponent ep isAdmin) comps
 
     case pResult of
         FormSuccess newProject -> do
